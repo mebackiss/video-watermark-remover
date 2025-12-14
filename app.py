@@ -7,14 +7,42 @@ import os
 # 适配 MoviePy 2.0 的导入
 from moviepy import VideoFileClip, AudioFileClip
 
+# ================= 页面配置 =================
 st.set_page_config(page_title="视频无损去水印", page_icon="🎬", layout="wide")
+
+# ================= 🔐 密码保护逻辑 (新加的部分) =================
+
+# 1. 这里设置你的密码！
+MY_PASSWORD = "666" 
+
+# 初始化 Session State (用来记住登录状态)
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+def check_password():
+    """检查密码是否正确"""
+    user_input = st.session_state['input_password']
+    if user_input == MY_PASSWORD:
+        st.session_state['logged_in'] = True
+        st.session_state['input_password'] = ""  # 清空输入框
+    else:
+        st.error("❌ 密码错误，请联系管理员获取权限")
+
+# 如果没登录，显示登录框
+if not st.session_state['logged_in']:
+    st.title("🔒 访问受限")
+    st.markdown("该工具仅限内部使用，请输入访问密码。")
+    st.text_input("请输入密码", type="password", key="input_password", on_change=check_password)
+    st.stop()  # ⛔️ 停止运行下面的代码
+
+# ================= 🎉 登录成功后显示的主程序 =================
+
 st.title("🎬 视频无损去水印工具")
 st.markdown("上传视频 -> 调整红框遮住水印 -> 一键去除 -> 保持原画质")
 
+# ... (下面是之前的核心功能代码，不用动) ...
+
 def process_video(input_path, output_path, mask_x, mask_y, mask_w, mask_h):
-    """
-    [MoviePy 2.0 适配版] 使用 OpenCV 逐帧修复视频
-    """
     cap = cv2.VideoCapture(input_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
